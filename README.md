@@ -1,0 +1,1 @@
+# cor_sem_locat_scale_validation
