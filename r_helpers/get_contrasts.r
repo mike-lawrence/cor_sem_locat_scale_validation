@@ -1,3 +1,4 @@
+cat('get_contrast_matrix() now available as a function\n')
 get_contrast_matrix = function(
 	data
 	, formula

@@ -21,6 +21,6 @@ future::plan('multisession')
 
 # helpers
 for(helper_file in fs::dir_ls('r_helpers')){
-	cat(paste0('Sourcing "',helper_file,'"\n'))
+	cat(paste0('\nSourcing "',helper_file,'"\n'))
 	source(helper_file)
 }

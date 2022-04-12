@@ -1,12 +1,21 @@
+# preamble ----
+
+# install dependencies & source helpers
+source('_imports.r')
+
+# load tidyverse and a magrittr pipe
 library(tidyverse)
 `%<>%` = magrittr::`%<>%`
-source('_imports.r')
+
+#make RStudio use cmdstan for syntax checking
+enable_rstudio_stan_syntax_check()
 
 #start parallel compile jobs in the background
 compile_stan_files_as_parallel_jobs(path='stan')
 
-nI = 10
-reps = 10
+# generate the data structure ----
+nI = 20
+reps = 20
 
 (
 	expand_grid(
@@ -20,7 +29,7 @@ reps = 10
 ) ->
 	dat
 
-
+# add contrasts
 (
 	dat
 	%>% select(-y,-rep)
@@ -35,12 +44,16 @@ reps = 10
 ) ->
 	Xc_with_vars
 
+#quick view of the contrasts
 (
 	Xc_with_vars
 	%>% unnest(contrasts)
+	%>% select(-id)
+	%>% distinct()
 	%>% View()
 )
 
+#package the data for Stan
 data_for_stan = lst(
 
 	# Xc: condition-level predictor matrix
@@ -101,11 +114,12 @@ data_for_stan = lst(
 )
 
 
-mod = cmdstanr::cmdstan_model('stan/hierarchical_cor_plus_sem_locat_scale_gauss.stan')
-
 # Sample the prior ----
 data_for_stan$prior_informed = 1
 data_for_stan$likelihood_informed = 0
+
+# load the sampling model (make sure compile jobs were successful!)
+mod = cmdstanr::cmdstan_model('stan/hierarchical_cor_plus_sem_locat_scale_gauss.stan')
 
 prior_predictive_output = sample_mod(
 	data = data_for_stan
@@ -115,7 +129,7 @@ prior_predictive_output = sample_mod(
 	, init = 2 # default of 2 is good for Gaussian likelihoods, lower may be necessary for binomial
 )
 
-#check diagnostics
+#check diagnostics (added as an attr; really should subclass instead)
 prior_predictive_output %<>% add_draws_and_diagnostics_attr()
 print(attr(prior_predictive_output,'dd')$sampler_diagnostics_across_chain_summary)
 (
@@ -177,7 +191,7 @@ post = sample_mod(
 	, mod = mod
 	, max_treedepth = 11 # 10 is default
 	, refresh_perc = 10
-	, init = 2 # default of 2 is good for Gaussian likelihoods, lower may be necessary for binomial
+	, init = 2
 )
 
 #check diagnostics

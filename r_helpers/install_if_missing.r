@@ -1,3 +1,4 @@
+cat('install_if_missing() now available as a function\n')
 #' Installs any packages not already installed
 #' @examples
 #' \dontrun{
