@@ -12,11 +12,15 @@ add_draws_and_diagnostics_attr = function(post,quantile_probs=c(0,.065,.25,.5,.7
 		dd$sampler_diagnostics
 
 	# Check treedepth, divergences, & rebfmi
+	max_treedepth = attr(post,'sampling_config')$max_treedepth
+	if(is.null(max_treedepth)){
+		max_treedepth = 10
+	}
 	(
 		dd$sampler_diagnostics
 		%>% group_by(.chain)
 		%>% summarise(
-			`% max treedepth hit` = 100*mean(treedepth__>attr(post,'sampling_config')$max_treedepth)
+			`% max treedepth hit` = 100*mean(treedepth__>max_treedepth)
 			, `% divergent` = 100*mean(divergent__)
 			, `1/ebfmi` = var(energy__)/(sum(diff(energy__)^2)/n()) # n.b. reciprocal of typical EBFMI, so bigger=bad, like rhat
 			, .groups = 'drop'
@@ -43,7 +47,7 @@ add_draws_and_diagnostics_attr = function(post,quantile_probs=c(0,.065,.25,.5,.7
 		dd$sampler_diagnostics
 		%>% as_tibble()
 		%>% select(.chain,.iteration,treedepth__)
-		%>% mutate(treedepth__=factor(treedepth__,levels=c(1:attr(post,'sampling_config')$max_treedepth)))
+		%>% mutate(treedepth__=factor(treedepth__,levels=c(1:max_treedepth)))
 		%>% group_by(.chain)
 		%>% count(treedepth__,.drop=F)
 		%>% pivot_wider(names_from=.chain,values_from=n)
@@ -60,7 +64,7 @@ add_draws_and_diagnostics_attr = function(post,quantile_probs=c(0,.065,.25,.5,.7
 		}}()
 	) ->
 		dd$draws
-
+	num_draws = nrow(dd$draws)
 	(
 		dd$draws
 		%>% select(-contains('cholfaccorr')) #remove cholesky, as we have the lower tri too
@@ -70,8 +74,8 @@ add_draws_and_diagnostics_attr = function(post,quantile_probs=c(0,.065,.25,.5,.7
 			, .cores = parallel::detectCores()
 		)
 		%>% mutate(
-			`% ess_bulk` = ess_bulk/attr(post,'sampling_config')$draws_sampling*100
-			, `% ess_tail` = ess_tail/attr(post,'sampling_config')$draws_sampling*100
+			`% ess_bulk` = ess_bulk/num_draws*100
+			, `% ess_tail` = ess_tail/num_draws*100
 		)
 	) ->
 		dd$par_summary

@@ -1,0 +1,85 @@
+# TODO:
+# 	- even with a minimal set of effects & interactions, there's 20+ effects, so the correlation matrix is very large; should we maybe break it up?
+# 	- ex. model the intercept & main effects with one multivariate normal then append a second multivariate normal for the interactions?
+# 	- or:
+# 		- Intercept/Alerting/Orienting/Executive ->SEM-> endo/exo variants
+# 			- have to deal with sign flipping of weights
+# 			- that gets us the task*(...) effects, then for interactions how about an SEM with weights from each of the constituent main effects
+#
+#
+#
+#
+# Intercept
+# 	-A/O/E
+# 		- endo/exo
+# 			- test1/test2
+# 				- locat/scale/binom
+#
+#
+# 3*2*2*3
+#
+#
+# 	I
+# 	A = sem_var1_to_var2(I,IA_cor,A_unique)
+# 	O = sem_var1_to_var2(I,IO_cor,O_unique)
+# 	E = sem_var1_to_var2(I,IE_cor,E_unique)
+# 	nx = sem_var1_to_var2(I,INX_cor,nx_unique) //main effect of task (endo vs exo)
+# 	NEED TO THINK ABOUT flankers:sstroop
+
+options(contrasts=c('contr.helmert','contr.poly'))
+(
+	expand_grid(
+		test = factor(1:2)
+		, task = factor(c('n','x'))
+		, warning = factor(c('hi','lo'))
+		, cuing = factor(c('v','i'))
+		, flankers = factor(c('c','i','n'))
+		, sstroop = factor(c('c','i'))
+	)
+) ->
+	dat
+
+(
+	dat
+	%>% group_by(test,task)
+	%>% group_split()
+	%>% map_dfr(
+		.f = function(x){
+			(
+				x
+				%>% mutate(
+					contrasts = get_contrast_matrix_rows_as_list(
+						data = .
+						, formula = ~ (warning+cuing+flankers+sstroop)^2
+						, safe_names_prefix = paste0('__',x$test[1],'_',x$task[1],'_')
+					)
+				)
+			)
+		}
+	)
+	%>% select(contrasts)
+	%>% unnest(contrasts)
+	# %>% distinct()
+	# %>% View()
+
+)
+
+model.matrix(
+	object = ~
+	, data = dat
+)
+
+	(task + warning + cuing + flankers1 + flankers2 + stroop)^3
+	task + warning + cuing + flankers1 + flankers2 + stroop +
+
+	task:warning + task:cuing + task:flankers1 + task:flankers2 + task:stroop +
+	warning:cuing + warning:flankers1 + warning:flankers2 + warning:stroop +
+	cuing:flankers1 + cuing:flankers2 + cuing:stroop +
+	flankers1:sstroop + flankers2:sstroop +
+
+
+
+	NXA = sem_var0_to_var1_and_var2(A,NXA_cor,NA_unique,XA_unique) // requires positive constraint on one cor for identifiability
+	TNA = sem_var0_to_var1_and_var2(NXA[1],TNA_cor,T1NA_unique,T2NA_unique) // requires positive constraint on one cor for identifiability
+	T1NA_scale = sem_var1_to_var2(TNA[1],T1NA_locat_scale_cor,T1NA_scale_unique)
+	T1NA_binom = sem_var1_to_var2(TNA[1],T1NA_locat_binom_cor,T1NA_binom_unique)
