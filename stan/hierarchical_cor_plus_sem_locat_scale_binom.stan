@@ -158,7 +158,7 @@ parameters{
 	vector<lower=0>[nXc] scale_coef_sd ;
 
 	// vector<lower=-1,upper=1>[nXc] locat_binom_cors ;
-	real<lower=0,upper=1> locat_binom_cors_intercepts ;
+	real<lower=0,upper=1> locat_binom_cors_intercept ;
 	vector<lower=-1,upper=1>[nXc-1] locat_binom_cors_others ;
 	matrix[nXc,nI] binom_icoef_unique_std_normals ;
 	vector[nXc] binom_coef_mean ;
@@ -167,7 +167,7 @@ parameters{
 
 }
 transformed parameters{
-	vector[nXc] locat_binom_cors = append_row(locat_binom_cors_intercepts,locat_binom_cors_others) ;
+	vector[nXc] locat_binom_cors = append_row(locat_binom_cors_intercept,locat_binom_cors_others) ;
 }
 model{
 
