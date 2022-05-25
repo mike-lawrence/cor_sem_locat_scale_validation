@@ -119,12 +119,16 @@ parameters{
 	vector[nXc] scale_coef_mean ;
 	vector<lower=0>[nXc] scale_coef_sd ;
 
-	vector<lower=-1,upper=1>[nXc] locat_binom_cors ;
+	// vector<lower=-1,upper=1>[nXc] locat_binom_cors ;
+	real<lower=0,upper=1> locat_binom_cors_intercepts ;
+	vector<lower=-1,upper=1>[nXc-1] locat_binom_cors_others ;
 	matrix[nXc,nI] binom_icoef_unique_std_normals ;
 	vector[nXc] binom_coef_mean ;
 	vector<lower=0>[nXc] binom_coef_sd ;
 
-
+}
+transformed parameters{
+	vector[nXc] locat_binom_cors = append_row(locat_binom_cors_intercepts,locat_binom_cors_others) ;
 }
 generated quantities{
 	// Y_gauss_rep: posterior-predictive observations modelled with location-scale Gaussian model
@@ -135,27 +139,16 @@ generated quantities{
 
 	{
 		// corStdNorms from cors & std-normal ----
-		matrix[nXc,nI] locat_icoef_corStdNorms = (
-			locat_cholfaccorr
-			* locat_icoef_std_normals
-		) ;
-
-		// prep to loop over time
-		matrix[nXc,nI] locat_icoef ;
-		matrix[nXc,nI] scale_icoef ;
-		matrix[nXc,nI] binom_icoef ;
-		row_vector[rXc] locat_icond ;
-		row_vector[rXc] scale_icond ;
-		row_vector[rXc] binom_icond ;
+		matrix[nXc,nI] locat_icoef_corStdNorms = locat_cholfaccorr * locat_icoef_std_normals ;
 
 		// locat just needs shift & scale
-		locat_icoef = shift_and_scale_cols(
+		matrix[nXc,nI] locat_icoef = shift_and_scale_cols(
 			locat_icoef_corStdNorms // std_normal_vals
 			, locat_coef_mean // shift
 			, locat_coef_sd // scale
 		) ;
 		// scale needs SEM from locat, then shift & scale
-		scale_icoef = shift_and_scale_cols(
+		matrix[nXc,nI] scale_icoef = shift_and_scale_cols(
 			sem_var1_to_var2(
 				locat_icoef_corStdNorms // std_normal_var1
 				, locat_scale_cors // cors
@@ -165,7 +158,7 @@ generated quantities{
 			, scale_coef_sd // scale
 		) ;
 		// binom needs SEM from locat, then shift & scale
-		binom_icoef = shift_and_scale_cols(
+		matrix[nXc,nI] binom_icoef = shift_and_scale_cols(
 			sem_var1_to_var2(
 				locat_icoef_corStdNorms // std_normal_var1
 				, locat_binom_cors // cors
@@ -175,9 +168,9 @@ generated quantities{
 			, binom_coef_sd // binom
 		) ;
 		// dot products to go from coef to cond
-		locat_icond = columns_dot_product(	locat_icoef[,iXc] , Xct ) ;
-		scale_icond = sqrt(exp(columns_dot_product( scale_icoef[,iXc] , Xct ))) ;
-		binom_icond = columns_dot_product(	binom_icoef[,iXc] , Xct ) ;
+		row_vector[rXc] locat_icond = columns_dot_product(	locat_icoef[,iXc] , Xct ) ;
+		row_vector[rXc] scale_icond = sqrt(exp(columns_dot_product( scale_icoef[,iXc] , Xct ))) ;
+		row_vector[rXc] binom_icond = columns_dot_product(	binom_icoef[,iXc] , Xct ) ;
 
 		for(i_nY in 1:nY){
 			Y_gauss_rep[i_nY] = normal_rng(

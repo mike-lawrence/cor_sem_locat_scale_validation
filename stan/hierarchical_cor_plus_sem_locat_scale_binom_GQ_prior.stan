@@ -149,6 +149,8 @@ generated quantities{
 	vector<lower=0>[nXc] scale_coef_sd ;
 
 	vector<lower=-1,upper=1>[nXc] locat_binom_cors ;
+	real<lower=0,upper=1> locat_binom_cors_intercepts ;
+	vector<lower=-1,upper=1>[nXc-1] locat_binom_cors_others ;
 	matrix[nXc,nI] binom_icoef_unique_std_normals ;
 	vector[nXc] binom_coef_mean ;
 	vector<lower=0>[nXc] binom_coef_sd ;
@@ -170,6 +172,9 @@ generated quantities{
 			binom_icoef_unique_std_normals[x,i] = std_normal_rng() ;
 		}
 	}
+	locat_binom_cors[1] = uniform_rng(0,1) ;
+	locat_binom_cors_intercepts = locat_binom_cors[1] ;
+	locat_binom_cors_others = locat_binom_cors[2:nXc] ;
 
 	vector[(nXc*(nXc-1))%/%2] locat_cors = flatten_lower_tri(multiply_lower_tri_self_transpose(locat_cholfaccorr)) ;
 
