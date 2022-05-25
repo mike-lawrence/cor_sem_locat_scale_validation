@@ -174,6 +174,19 @@ print(attr(prior_post,'dd')$sampler_diagnostics_across_chain_summary)
 ) ->
 	prior_post_draw_for_predictive
 
+# tweak the correlation for the between locat & binom intercepts to be high
+prior_post_draw_for_predictive %<>% (
+	.
+	%>% posterior::as_draws_list()
+	%>% pluck(1)
+	%>% {function(x){
+		x %<>% assign_in(paste0('locat_binom_cors[1]'),.8)
+		x %<>% assign_in(paste0('locat_binom_cors_intercept'),.8)
+		return(x)
+	}}()
+	%>% posterior::as_draws_array()
+)
+
 
 
 # Generate yreps from the prior draw & assign into data_for_stan ----

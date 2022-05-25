@@ -158,8 +158,8 @@ generated quantities{
 	locat_cholfaccorr = lkj_corr_cholesky_rng(nXc,1.0) ;
 
 	for(x in 1:nXc){
-		locat_scale_cors[x] = uniform_rng(-1,1) ; //commented-out bc implied by bounds
-		locat_binom_cors[x] = uniform_rng(-1,1) ; //commented-out bc implied by bounds
+		locat_scale_cors[x] = uniform_rng(-1,1) ;
+		locat_binom_cors[x] = uniform_rng(-1,1) ;
 		locat_coef_mean[x] = std_normal_rng() ;
 		scale_coef_mean[x] = std_normal_rng() ;
 		binom_coef_mean[x] = std_normal_rng() ;
