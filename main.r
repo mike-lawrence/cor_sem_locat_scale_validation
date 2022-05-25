@@ -174,20 +174,6 @@ print(attr(prior_post,'dd')$sampler_diagnostics_across_chain_summary)
 ) ->
 	prior_post_draw_for_predictive
 
-# tweak the reliabilities to be moderate-high:
-prior_post_draw_for_predictive %<>% (
-	.
-	%>% posterior::as_draws_list()
-	%>% pluck(1)
-	%>% {function(x){
-		for(i in 1:data_for_stan$nXc){
-			x %<>% assign_in(paste0('locat_cors[',i,']'),.2)
-		}
-		return(x)
-	}}()
-	%>% posterior::as_draws_array()
-)
-
 
 
 # Generate yreps from the prior draw & assign into data_for_stan ----
