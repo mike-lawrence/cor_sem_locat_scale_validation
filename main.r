@@ -155,7 +155,7 @@ prior_post = sample_mod(
 	)
 	, mod = sampling_mod
 	, preset = 'frugal' #options: frugal, thorough; former being cmdstanr defaults, latter using `iter_warmup=1e4,max_treedepth=12,metric='dense_e'`
-	, precent = 10 # `percent=1`==`refresh=1``; `percent=Inf`==`refresh=0`
+	, percent = 10 # `percent=1`==`refresh=1``; `percent=Inf`==`refresh=0`
 	# , ... #can supply any deviations-from-preset values here for mod$sample(...) arguments
 )
 #check diagnostics
@@ -209,7 +209,7 @@ post = sample_mod(
 	)
 	, mod = sampling_mod
 	, preset = 'frugal' #options: frugal, thorough; former being cmdstanr defaults, latter using `iter_warmup=1e4,max_treedepth=12,metric='dense_e'`
-	, precent = 10 # `percent=1`==`refresh=1``; `percent=Inf`==`refresh=0`
+	, percent = 10 # `percent=1`==`refresh=1``; `percent=Inf`==`refresh=0`
 	# , ... #can supply any deviations-from-preset values here for mod$sample(...) arguments
 )
 
