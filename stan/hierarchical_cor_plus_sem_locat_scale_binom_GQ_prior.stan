@@ -148,12 +148,13 @@ generated quantities{
 	vector[nXc] scale_coef_mean ;
 	vector<lower=0>[nXc] scale_coef_sd ;
 
-	vector<lower=-1,upper=1>[nXc] locat_binom_cors ;
 	real<lower=0,upper=1> locat_binom_cors_intercept ;
 	vector<lower=-1,upper=1>[nXc-1] locat_binom_cors_others ;
 	matrix[nXc,nI] binom_icoef_unique_std_normals ;
 	vector[nXc] binom_coef_mean ;
 	vector<lower=0>[nXc] binom_coef_sd ;
+
+	vector<lower=-1,upper=1>[nXc] locat_binom_cors ;
 
 	locat_cholfaccorr = lkj_corr_cholesky_rng(nXc,1.0) ;
 
